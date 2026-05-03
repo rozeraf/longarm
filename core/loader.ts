@@ -31,5 +31,7 @@ export async function loadModules() {
     console.log(`[LOADER] Module '${mod.name}' loaded.`);
   }
 
-  console.log(`[LOADER] Registered ${totalCommands} commands and ${totalJobs} jobs.`);
+  console.log(
+    `[LOADER] Registered ${totalCommands} commands and ${totalJobs} jobs.`,
+  );
 }
