@@ -1,48 +1,42 @@
 import type { NextFunction } from "grammy";
 import type { BotContext } from "./types";
-import { randomBytes } from "crypto";
+import { scryptSync, timingSafeEqual } from "crypto";
 
-const getWhitelistedUsers = () => {
-  return (process.env.WHITELISTED_USERS || "")
-    .split(",")
-    .map((id) => parseInt(id.trim(), 10))
-    .filter((id) => !isNaN(id));
-};
+const getWhitelistedUsers = () =>
+    (process.env.WHITELISTED_USERS || "")
+        .split(",")
+        .map((id) => parseInt(id.trim(), 10))
+        .filter((id) => !isNaN(id));
 
-let dailyPassword = "";
+function verifyPassword(input: string): boolean {
+    const stored = process.env.PASSWORD_HASH;
+    if (!stored) return false;
 
-export function generateDailyPassword(): string {
-  const pwd = randomBytes(4).toString("hex");
-  console.log(`[AUTH] Daily password is: ${pwd}`);
-  return pwd;
+    const [salt, hash] = stored.split(":");
+    if (!salt || !hash) return false;
+
+    try {
+        const inputHash = scryptSync(input, salt, 64);
+        const storedHash = Buffer.from(hash, "hex");
+        return timingSafeEqual(inputHash, storedHash);
+    } catch {
+        return false;
+    }
 }
-
-export function rotateDailyPassword() {
-  dailyPassword = generateDailyPassword();
-}
-
-// Initialize on startup
-rotateDailyPassword();
 
 export async function authMiddleware(ctx: BotContext, next: NextFunction) {
-  const userId = ctx.from?.id;
-  const WHITELISTED_USERS = getWhitelistedUsers();
+    const userId = ctx.from?.id;
+    if (!userId || !getWhitelistedUsers().includes(userId)) return;
 
-  if (!userId || !WHITELISTED_USERS.includes(userId)) {
-    return;
-  }
+    if (ctx.session.authenticated) {
+        return next();
+    }
 
-  const today = new Date().toISOString().split("T")[0];
+    if (ctx.message?.text && verifyPassword(ctx.message.text)) {
+        ctx.session.authenticated = true;
+        await ctx.reply("Authenticated.");
+        return;
+    }
 
-  if (ctx.session.authenticatedAt === today) {
-    return next();
-  }
-
-  if (ctx.message?.text === dailyPassword) {
-    ctx.session.authenticatedAt = today;
-    await ctx.reply("Authentication successful. You can now use the bot.");
-    return;
-  }
-
-  await ctx.reply("Please enter the daily password to continue.");
+    await ctx.reply("Password:");
 }
