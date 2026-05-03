@@ -32,21 +32,22 @@ Longarm runs as a systemd service on your machine and gives you secure remote ac
 
 ```
 longarm/
-├── index.ts              # Entry point
-├── core/
-│   ├── auth.ts           # Whitelist + password middleware
-│   ├── bot.ts            # grammY bot instance, session setup
-│   ├── loader.ts         # Module registration
-│   ├── scheduler.ts      # Cron job runner
-│   └── types.ts          # Shared types: BotContext, ModuleDefinition, etc.
-└── modules/
-    ├── modules.ts        # Module registry (single import list)
-    ├── ssh/              # Tailscale + SSH connection helper
-    ├── power/            # Shutdown, reboot, sleep, lock
-    └── camera/           # Webcam snapshot
+└── src/
+    ├── index.ts          # Entry point
+    ├── core/
+    │   ├── auth.ts       # Whitelist + password middleware
+    │   ├── bot.ts        # grammY bot instance, session setup
+    │   ├── loader.ts     # Module registration
+    │   ├── scheduler.ts  # Cron job runner
+    │   └── types.ts      # Shared types: BotContext, ModuleDefinition, etc.
+    └── modules/
+        ├── modules.ts    # Module registry (single import list)
+        ├── ssh/          # Tailscale + SSH connection helper
+        ├── power/        # Shutdown, reboot, sleep, lock
+        └── camera/       # Webcam snapshot
 ```
 
-Each module lives in its own directory with an `index.ts` (module definition) and `handlers.ts` (logic).
+Each module lives in its own directory under `src/modules/` with an `index.ts` (module definition) and `handlers.ts` (logic).
 
 ---
 
@@ -96,7 +97,7 @@ console.log(salt + ':' + hash);
 
 ```bash
 # Development
-bun run index.ts
+bun run src/index.ts
 
 # Production — run as a systemd service (see below)
 ```
@@ -118,7 +119,7 @@ Type=simple
 User=your_username
 WorkingDirectory=/home/your_username/longarm
 EnvironmentFile=/home/your_username/longarm/.env
-ExecStart=/home/your_username/.bun/bin/bun run index.ts
+ExecStart=/home/your_username/.bun/bin/bun run src/index.ts
 Restart=on-failure
 RestartSec=5
 
@@ -142,10 +143,10 @@ journalctl -u longarm -f
 
 ## Adding a Module
 
-1. Create a directory under `modules/`:
+1. Create a directory under `src/modules/`:
 
 ```
-modules/
+src/modules/
 └── my-module/
     ├── index.ts
     └── handlers.ts
@@ -169,7 +170,7 @@ export const myModule: ModuleDefinition = {
 };
 ```
 
-3. Register it in `modules/modules.ts`:
+3. Register it in `src/modules/modules.ts`:
 
 ```typescript
 import { myModule } from "./my-module";
