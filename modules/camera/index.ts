@@ -1,4 +1,4 @@
-import { ModuleDefinition } from "../../core/types";
+import type { ModuleDefinition } from "../../core/types";
 import { photoHandler } from "./handlers";
 
 export const cameraModule: ModuleDefinition = {

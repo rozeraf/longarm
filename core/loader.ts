@@ -10,6 +10,7 @@ export async function loadModules() {
 
   let totalCommands = 0;
   let totalJobs = 0;
+  let totalCallbacks = 0;
 
   for (const mod of modules) {
     if (mod.onLoad) {
@@ -23,6 +24,13 @@ export async function loadModules() {
       }
     }
 
+    if (mod.callbacks) {
+      for (const cb of mod.callbacks) {
+        bot.callbackQuery(cb.trigger, cb.handler);
+        totalCallbacks++;
+      }
+    }
+
     if (mod.jobs) {
       scheduleJobs(mod.jobs);
       totalJobs += mod.jobs.length;
@@ -32,6 +40,6 @@ export async function loadModules() {
   }
 
   console.log(
-    `[LOADER] Registered ${totalCommands} commands and ${totalJobs} jobs.`,
+    `[LOADER] Registered ${totalCommands} commands, ${totalCallbacks} callbacks, and ${totalJobs} jobs.`,
   );
 }

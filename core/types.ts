@@ -1,14 +1,22 @@
 import type { Context, SessionFlavor } from "grammy";
+import type { ConversationFlavor, Conversation } from "@grammyjs/conversations";
 
 export interface SessionData {
   authenticatedAt?: string;
 }
 
-export type BotContext = Context & SessionFlavor<SessionData>;
-
+export type BotContext = Context &
+  SessionFlavor<SessionData> &
+  ConversationFlavor<Context & SessionFlavor<SessionData>>;
+export type BotConversation = Conversation<BotContext, BotContext>;
 export interface CommandDefinition {
   command: string;
   description?: string;
+  handler: (ctx: BotContext) => Promise<void> | void;
+}
+
+export interface CallbackDefinition {
+  trigger: string | RegExp;
   handler: (ctx: BotContext) => Promise<void> | void;
 }
 
@@ -20,6 +28,7 @@ export interface JobDefinition {
 export interface ModuleDefinition {
   name: string;
   commands?: CommandDefinition[];
+  callbacks?: CallbackDefinition[];
   jobs?: JobDefinition[];
   onLoad?: () => Promise<void> | void;
 }

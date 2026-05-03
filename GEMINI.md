@@ -1,6 +1,7 @@
 # Longarm Architecture
 
 ## Entry Point (`index.ts`)
+
 - Creates bot instance.
 - Calls `loader.ts` to register modules.
 - Starts `scheduler.ts` for background jobs.
@@ -8,6 +9,7 @@
 - Minimal logic, purely orchestration.
 
 ## Core System (`core/`)
+
 - **bot.ts**: grammY instance initialization. Adds session middleware with authentication state.
 - **auth.ts**: Middleware for every command.
   - Checks `user_id` against `WHITELISTED_USERS`.
@@ -18,6 +20,7 @@
 - **types.ts**: Common interfaces for modules, commands, and jobs.
 
 ## Module System (`modules/`)
+
 - **modules.ts**: A manual array of all active modules.
 - **Module Structure**:
   - `modules/<name>/index.ts`: Declarative definition (name, commands, jobs, onLoad).
@@ -25,6 +28,7 @@
 - Modules should be isolated and independent.
 
 ## Technical Standards
+
 - Use `grammy` for Telegram API.
 - Use `cron` for scheduling.
 - Use `bun` as runtime and package manager.
